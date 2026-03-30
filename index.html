@@ -1,1 +1,671 @@
-Hello
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Herbert — A browser that respects you</title>
+  <meta name="description" content="Herbert is a next-generation browser built for speed, privacy, and clarity.">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --white: #ffffff;
+      --gray-50: #fafafa;
+      --gray-100: #f5f5f5;
+      --gray-200: #e5e5e5;
+      --gray-400: #a3a3a3;
+      --gray-500: #737373;
+      --gray-600: #525252;
+      --gray-800: #262626;
+      --gray-900: #171717;
+      --accent: #171717;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--white);
+      color: var(--gray-900);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 24px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.3s ease;
+    }
+
+    nav.scrolled {
+      border-bottom-color: var(--gray-200);
+    }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--gray-900);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      align-items: center;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--gray-500);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--gray-900);
+    }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 120px 48px 80px;
+      max-width: 840px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border: 1px solid var(--gray-200);
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--gray-500);
+      margin-bottom: 40px;
+    }
+
+    .hero-badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gray-900);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .hero h1 {
+      font-size: clamp(40px, 6vw, 72px);
+      font-weight: 600;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      color: var(--gray-900);
+      margin-bottom: 28px;
+    }
+
+    .hero p {
+      font-size: clamp(17px, 2vw, 20px);
+      color: var(--gray-500);
+      line-height: 1.6;
+      max-width: 520px;
+      margin-bottom: 48px;
+      font-weight: 300;
+    }
+
+    .cta-group {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      background: var(--gray-900);
+      color: var(--white);
+      border: none;
+      border-radius: 100px;
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+    }
+
+    .btn-primary:hover {
+      background: var(--gray-800);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      background: transparent;
+      color: var(--gray-600);
+      border: 1px solid var(--gray-200);
+      border-radius: 100px;
+      font-size: 15px;
+      font-weight: 400;
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--gray-400);
+      color: var(--gray-900);
+    }
+
+    /* Features */
+    .features {
+      padding: 120px 48px;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--gray-400);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 64px;
+      max-width: 560px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 48px;
+    }
+
+    .feature-card {
+      padding: 0;
+    }
+
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .feature-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--gray-600);
+    }
+
+    .feature-card h3 {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin-bottom: 10px;
+      color: var(--gray-900);
+    }
+
+    .feature-card p {
+      font-size: 15px;
+      color: var(--gray-500);
+      line-height: 1.65;
+      font-weight: 300;
+    }
+
+    /* Philosophy */
+    .philosophy {
+      padding: 120px 48px;
+      background: var(--gray-50);
+    }
+
+    .philosophy-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .philosophy-text h2 {
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 24px;
+    }
+
+    .philosophy-text p {
+      font-size: 16px;
+      color: var(--gray-500);
+      line-height: 1.7;
+      font-weight: 300;
+      margin-bottom: 16px;
+    }
+
+    .philosophy-visual {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .stat-row {
+      display: flex;
+      gap: 20px;
+    }
+
+    .stat-card {
+      flex: 1;
+      padding: 32px;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 16px;
+    }
+
+    .stat-card .number {
+      font-size: 36px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      color: var(--gray-900);
+      margin-bottom: 6px;
+    }
+
+    .stat-card .label {
+      font-size: 14px;
+      color: var(--gray-400);
+      font-weight: 400;
+    }
+
+    /* CTA */
+    .cta-section {
+      padding: 160px 48px;
+      text-align: center;
+    }
+
+    .cta-section h2 {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 600;
+      letter-spacing: -0.035em;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .cta-section p {
+      font-size: 18px;
+      color: var(--gray-500);
+      font-weight: 300;
+      margin-bottom: 40px;
+    }
+
+    .email-form {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      max-width: 440px;
+      margin: 0 auto;
+    }
+
+    .email-form input {
+      flex: 1;
+      padding: 14px 20px;
+      border: 1px solid var(--gray-200);
+      border-radius: 100px;
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s ease;
+      color: var(--gray-900);
+    }
+
+    .email-form input::placeholder {
+      color: var(--gray-400);
+    }
+
+    .email-form input:focus {
+      border-color: var(--gray-400);
+    }
+
+    .email-form button {
+      padding: 14px 28px;
+      background: var(--gray-900);
+      color: var(--white);
+      border: none;
+      border-radius: 100px;
+      font-size: 15px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s ease;
+    }
+
+    .email-form button:hover {
+      background: var(--gray-800);
+    }
+
+    /* Footer */
+    footer {
+      padding: 40px 48px;
+      border-top: 1px solid var(--gray-100);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .footer-left {
+      font-size: 13px;
+      color: var(--gray-400);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: var(--gray-400);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--gray-600);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      nav {
+        padding: 20px 24px;
+      }
+
+      .nav-links {
+        gap: 24px;
+      }
+
+      .hero {
+        padding: 120px 24px 80px;
+      }
+
+      .cta-group {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .btn-primary, .btn-secondary {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .features {
+        padding: 80px 24px;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .philosophy {
+        padding: 80px 24px;
+      }
+
+      .philosophy-inner {
+        grid-template-columns: 1fr;
+        gap: 48px;
+      }
+
+      .cta-section {
+        padding: 100px 24px;
+      }
+
+      .email-form {
+        flex-direction: column;
+      }
+
+      footer {
+        flex-direction: column;
+        gap: 16px;
+        padding: 32px 24px;
+        text-align: center;
+      }
+
+      .stat-row {
+        flex-direction: column;
+      }
+    }
+
+    /* Fade-in animation */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar">
+    <a href="#" class="logo">Herbert</a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#philosophy">Philosophy</a></li>
+      <li><a href="#waitlist">Early Access</a></li>
+    </ul>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      In Development
+    </div>
+    <h1>Browsing, distilled to its essence</h1>
+    <p>Herbert is a browser built from the ground up for speed, privacy, and clarity. No clutter. No compromise.</p>
+    <div class="cta-group">
+      <a href="#waitlist" class="btn-primary">
+        Join the Waitlist
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8h9m0 0L9 4.5M12.5 8 9 11.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="#features" class="btn-secondary">Learn More</a>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="fade-in">
+      <p class="section-label">Features</p>
+      <h2 class="section-title">Built different, on purpose</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <h3>Instant response</h3>
+        <p>Engineered for raw performance. Pages load faster, tabs stay light, and everything feels immediate.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </div>
+        <h3>Private by default</h3>
+        <p>Trackers blocked. Fingerprinting prevented. Your browsing stays yours without any configuration.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+        </div>
+        <h3>Open foundation</h3>
+        <p>Built on Chromium with full transparency. Every decision we make is visible, auditable, and intentional.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <h3>Clean interface</h3>
+        <p>A minimal UI that stays out of your way. Focus on content, not chrome around the content.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg>
+        </div>
+        <h3>Extensible</h3>
+        <p>Full support for the extensions you already use. Compatible with the Chrome Web Store ecosystem.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg>
+        </div>
+        <h3>Cross-platform</h3>
+        <p>Available on every major platform. Your browser follows you across desktop and mobile seamlessly.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="philosophy" id="philosophy">
+    <div class="philosophy-inner">
+      <div class="philosophy-text fade-in">
+        <p class="section-label">Philosophy</p>
+        <h2>We believe the browser can be better</h2>
+        <p>The browser is the most used software on every device, yet it has barely evolved in a decade. We're changing that.</p>
+        <p>Herbert strips away the unnecessary and rebuilds what matters. Faster rendering, stronger privacy, and a design that respects your attention.</p>
+      </div>
+      <div class="philosophy-visual fade-in">
+        <div class="stat-row">
+          <div class="stat-card">
+            <div class="number">2x</div>
+            <div class="label">Faster page loads</div>
+          </div>
+          <div class="stat-card">
+            <div class="number">0</div>
+            <div class="label">Trackers allowed</div>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-card">
+            <div class="number">40%</div>
+            <div class="label">Less memory usage</div>
+          </div>
+          <div class="stat-card">
+            <div class="number">100%</div>
+            <div class="label">Open source</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section" id="waitlist">
+    <div class="fade-in">
+      <h2>Be the first to try Herbert</h2>
+      <p>Sign up for early access. We'll let you know when it's ready.</p>
+      <form class="email-form" onsubmit="handleSubmit(event)">
+        <input type="email" placeholder="you@email.com" required>
+        <button type="submit">Get Early Access</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-left">&copy; 2026 Herbert. All rights reserved.</div>
+    <ul class="footer-links">
+      <li><a href="mailto:hello@herbert.computer">Contact</a></li>
+    </ul>
+  </footer>
+
+  <script>
+    // Navbar scroll effect
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 10);
+    });
+
+    // Intersection Observer for fade-in
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, index) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.classList.add('visible');
+          }, index * 80);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // Form handler
+    function handleSubmit(e) {
+      e.preventDefault();
+      const input = e.target.querySelector('input');
+      const button = e.target.querySelector('button');
+      button.textContent = 'Thank you!';
+      button.disabled = true;
+      input.disabled = true;
+      input.value = '';
+      setTimeout(() => {
+        button.textContent = 'Get Early Access';
+        button.disabled = false;
+        input.disabled = false;
+      }, 3000);
+    }
+  </script>
+
+</body>
+</html>
