@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="referrer" content="no-referrer">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'unsafe-inline' https://script.google.com https://script.googleusercontent.com; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    >
+    <title>Herbert Meeting</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+        background: #050505;
+        color: #fff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      main {
+        width: min(100%, 420px);
+        text-align: center;
+      }
+
+      .mark {
+        width: 52px;
+        height: 52px;
+        margin: 0 auto 24px;
+        display: grid;
+        place-items: center;
+        border: 1px solid #333;
+        border-radius: 16px;
+        font-size: 24px;
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: 22px;
+        letter-spacing: -0.03em;
+      }
+
+      p {
+        margin: 0;
+        color: #a3a3a3;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+
+      a {
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="mark" aria-hidden="true">🤖</div>
+      <h1 id="title">회의 링크를 확인하고 있습니다</h1>
+      <p id="status">잠시만 기다려 주세요.</p>
+      <noscript>
+        <p>회의로 이동하려면 JavaScript를 활성화해 주세요.</p>
+      </noscript>
+    </main>
+
+    <script>
+      (() => {
+        'use strict';
+
+        const ROUTER_ENDPOINT =
+          'https://script.google.com/macros/s/AKfycbw9flnyJ_v0rr0HYDt1EMzLsUnq6fS2ENGp8cJiQtM24o69wssavY7gPLzx4uQiF-62/exec';
+        const title = document.getElementById('title');
+        const status = document.getElementById('status');
+        let finished = false;
+
+        function showError(message) {
+          if (finished) return;
+          finished = true;
+          title.textContent = '연결할 회의를 찾지 못했습니다';
+          status.textContent = message;
+        }
+
+        window.herbertMeetingRouterCallback = (payload) => {
+          if (finished) return;
+          if (!payload || payload.ok !== true || typeof payload.url !== 'string') {
+            showError('Calendar 일정을 확인한 뒤 다시 시도해 주세요.');
+            return;
+          }
+
+          let target;
+          try {
+            target = new URL(payload.url);
+          } catch (error) {
+            showError('유효한 Google Meet 링크를 받지 못했습니다.');
+            return;
+          }
+
+          if (target.protocol !== 'https:' || target.hostname !== 'meet.google.com') {
+            showError('허용되지 않은 회의 주소입니다.');
+            return;
+          }
+
+          finished = true;
+          title.textContent = '회의로 이동합니다';
+          status.textContent = 'Google Meet를 여는 중입니다.';
+          window.location.replace(target.href);
+        };
+
+        if (ROUTER_ENDPOINT.startsWith('__')) {
+          showError('회의 라우터가 아직 배포되지 않았습니다.');
+          return;
+        }
+
+        const routerUrl = new URL(ROUTER_ENDPOINT);
+        routerUrl.searchParams.set('_', String(Date.now()));
+
+        const script = document.createElement('script');
+        script.src = routerUrl.href;
+        script.referrerPolicy = 'no-referrer';
+        script.onerror = () => {
+          showError('회의 라우터에 연결하지 못했습니다.');
+        };
+        document.head.appendChild(script);
+
+        window.setTimeout(() => {
+          showError('응답 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.');
+        }, 10000);
+      })();
+    </script>
+  </body>
+</html>
