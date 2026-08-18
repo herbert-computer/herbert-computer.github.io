@@ -4223,11 +4223,36 @@
       cursor: pointer;
     }
 
+    .launch-form .button:disabled {
+      cursor: wait;
+      opacity: .58;
+    }
+
+    .launch-honeypot,
+    .launch-submit-frame {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      overflow: hidden !important;
+      clip: rect(0 0 0 0) !important;
+      clip-path: inset(50%) !important;
+      white-space: nowrap !important;
+    }
+
     .launch-form small {
       display: block;
       margin-top: 8px;
       color: var(--gray);
       font-size: 10px;
+    }
+
+    .launch-form-status {
+      min-height: 1.35em;
+    }
+
+    .launch-form-status[data-state="success"] {
+      color: var(--black);
+      font-weight: 700;
     }
 
     footer {
@@ -7713,13 +7738,20 @@
         <h2>Be The First To Know When Herbert Runtime Launches</h2>
         <div class="contact-row">
           <p>Get launch notes, benchmark updates, and early-access news. Product and partnership inquiries are welcome at in@herbert.computer.</p>
-          <form class="launch-form" data-launch-form>
+          <form class="launch-form" data-launch-form method="post" target="launch-updates-frame" action="https://script.google.com/macros/s/AKfycbxef-Hc3iOv0ekpS9FGUn_lS93g3nb5-JBy6fSE-P_tELNun6CQv9vF7PtZt9chZVK4bQ/exec">
             <label class="sr-only" for="launch-email">Work email</label>
             <div class="launch-form-row">
               <input id="launch-email" name="email" type="email" autocomplete="email" placeholder="Work email" required>
-              <button class="button button-primary" type="submit">Request Updates</button>
+              <button class="button button-primary" type="submit" data-launch-submit>Join Launch Updates</button>
             </div>
-            <small>Opens your email client to send the request.</small>
+            <label class="launch-honeypot" aria-hidden="true">Company website<input name="company_website" type="text" tabindex="-1" autocomplete="off"></label>
+            <input name="source" type="hidden" value="herbert.computer">
+            <input name="consent_version" type="hidden" value="2026-08-18-v1">
+            <input name="nonce" type="hidden" value="">
+            <input name="elapsed_ms" type="hidden" value="">
+            <input name="turnstile_token" type="hidden" value="">
+            <small class="launch-form-status" data-launch-status role="status" aria-live="polite">Herbert Runtime launch notes and early-access updates. Your email is used only for these updates, and you can unsubscribe anytime.</small>
+            <iframe class="launch-submit-frame" name="launch-updates-frame" title="Launch updates submission" data-launch-frame tabindex="-1" aria-hidden="true"></iframe>
           </form>
         </div>
       </div>
@@ -9654,14 +9686,93 @@
       }
 
       const launchForm = document.querySelector("[data-launch-form]");
-      launchForm?.addEventListener("submit", (event) => {
-        event.preventDefault();
-        const email = launchForm.elements.email.value.trim();
-        if (!email) return;
-        const subject = encodeURIComponent("Herbert Runtime Launch Updates");
-        const body = encodeURIComponent(`Please add ${email} to the Herbert Runtime launch updates list.`);
-        window.location.href = `mailto:in@herbert.computer?subject=${subject}&body=${body}`;
-      });
+      if (launchForm) {
+        const launchSubmit = launchForm.querySelector("[data-launch-submit]");
+        const launchStatus = launchForm.querySelector("[data-launch-status]");
+        const launchFrame = launchForm.querySelector("[data-launch-frame]");
+        const launchReadyAt = performance.now();
+        const launchStatusDefault = launchStatus.textContent;
+        let launchSubmitting = false;
+        let launchNonce = "";
+        let launchTimeout;
+        let launchResetTimeout;
+
+        const createLaunchNonce = () => {
+          const bytes = crypto.getRandomValues(new Uint8Array(16));
+          return [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+        };
+
+        const isTrustedLaunchOrigin = (origin) => {
+          try {
+            const url = new URL(origin);
+            return url.protocol === "https:" && (
+              url.hostname === "script.google.com" ||
+              url.hostname === "script.googleusercontent.com" ||
+              url.hostname.endsWith("-script.googleusercontent.com")
+            );
+          } catch {
+            return false;
+          }
+        };
+
+        const resetLaunchForm = (copy = launchStatusDefault) => {
+          window.clearTimeout(launchTimeout);
+          window.clearTimeout(launchResetTimeout);
+          launchSubmitting = false;
+          launchNonce = "";
+          launchSubmit.disabled = false;
+          launchSubmit.textContent = "Join Launch Updates";
+          launchStatus.dataset.state = "";
+          launchStatus.textContent = copy;
+        };
+
+        launchForm.addEventListener("submit", (event) => {
+          event.preventDefault();
+          if (launchSubmitting || !launchForm.reportValidity()) return;
+
+          window.clearTimeout(launchResetTimeout);
+          launchSubmitting = true;
+          launchNonce = createLaunchNonce();
+          launchSubmit.disabled = true;
+          launchSubmit.textContent = "Joining...";
+          launchStatus.dataset.state = "pending";
+          launchStatus.textContent = "Saving your email...";
+
+          const elapsed = performance.now() - launchReadyAt;
+          const remainingDelay = Math.max(0, 2500 - elapsed);
+
+          window.setTimeout(() => {
+            launchForm.elements.nonce.value = launchNonce;
+            launchForm.elements.elapsed_ms.value = String(Math.round(performance.now() - launchReadyAt));
+            HTMLFormElement.prototype.submit.call(launchForm);
+
+            launchTimeout = window.setTimeout(() => {
+              resetLaunchForm("We couldn't confirm the signup. Please try again.");
+            }, 15000);
+          }, remainingDelay);
+        });
+
+        window.addEventListener("message", (event) => {
+          if (!isTrustedLaunchOrigin(event.origin)) return;
+          const payload = event.data;
+          if (!payload || payload.type !== "herbert-launch-update" || payload.nonce !== launchNonce) return;
+
+          window.clearTimeout(launchTimeout);
+          launchNonce = "";
+          launchSubmitting = false;
+          launchSubmit.disabled = false;
+
+          if (payload.status === "success") {
+            launchForm.elements.email.value = "";
+            launchSubmit.textContent = "Joined";
+            launchStatus.dataset.state = "success";
+            launchStatus.textContent = "You're on the Launch Updates list.";
+            launchResetTimeout = window.setTimeout(() => resetLaunchForm(), 5000);
+          } else {
+            resetLaunchForm("We couldn't save your email. Please try again.");
+          }
+        });
+      }
 
       const applicationCards = [...document.querySelectorAll(".application-card")];
       const integration = document.querySelector("#runtime-integration");

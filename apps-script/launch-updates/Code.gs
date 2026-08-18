@@ -1,4 +1,4 @@
-const LAUNCH_SHEET_NAME = 'Subscribers';
+const LAUNCH_SHEET_NAME = '업데이트 신청자';
 const LAUNCH_SOURCE = 'herbert.computer';
 const DEFAULT_CONSENT_VERSION = '2026-08-18-v1';
 const ALLOWED_PARENT_ORIGIN = 'https://herbert.computer';
@@ -12,7 +12,7 @@ function doPost(event) {
 
     const email = normalizeEmail_(params.email);
     const source = String(params.source || '').trim();
-    const consentVersion = String(params.consent_version || DEFAULT_CONSENT_VERSION).trim();
+    const consentVersion = DEFAULT_CONSENT_VERSION;
     const turnstileSecret = PropertiesService.getScriptProperties().getProperty('TURNSTILE_SECRET');
 
     if (turnstileSecret && !verifyTurnstile_(params.turnstile_token, turnstileSecret)) {
@@ -28,10 +28,10 @@ function doPost(event) {
       if (!hasEmail_(sheet, email)) {
         sheet.appendRow([
           new Date(),
-          email,
-          'Pending',
-          source,
-          consentVersion,
+          safeSheetText_(email),
+          '대기',
+          safeSheetText_(source),
+          safeSheetText_(consentVersion),
           '',
           '',
           '',
@@ -73,13 +73,18 @@ function safeNonce_(value) {
   return /^[A-Za-z0-9_-]{16,128}$/.test(nonce) ? nonce : '';
 }
 
+function safeSheetText_(value) {
+  const text = String(value || '');
+  return /^[=+\-@]/.test(text) ? "'" + text : text;
+}
+
 function hasEmail_(sheet, email) {
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return false;
 
   const emails = sheet.getRange(2, 2, lastRow - 1, 1).getDisplayValues();
   return emails.some(function (row) {
-    return String(row[0] || '').trim().toLowerCase() === email;
+    return String(row[0] || '').replace(/^'/, '').trim().toLowerCase() === email;
   });
 }
 
@@ -110,7 +115,7 @@ function response_(status, nonce) {
 
   return HtmlService.createHtmlOutput(
     '<!doctype html><meta charset="utf-8"><script>' +
-      'parent.postMessage(' + payload + ',' + JSON.stringify(ALLOWED_PARENT_ORIGIN) + ');' +
+      'top.postMessage(' + payload + ',' + JSON.stringify(ALLOWED_PARENT_ORIGIN) + ');' +
     '</script>'
   ).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
